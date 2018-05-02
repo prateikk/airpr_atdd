@@ -17,13 +17,13 @@ import java.util.concurrent.TimeUnit;
 
 public class ConfigureCuke {
 
-    Scenario scenario ;
+    Scenario scenario;
 
     @Before
-    public void setUp(Scenario scenario){
+    public void setUp(Scenario scenario) {
         this.scenario = scenario;
         System.out.println("Execution Started");
-        System.out.println("Scenario: "+scenario.getName());
+        System.out.println("Scenario: " + scenario.getName());
         DriverManager.setDriver(getBrowserDriver());
         setDefaultBrowserProperties(DriverManager.getDriver());
 
@@ -31,28 +31,46 @@ public class ConfigureCuke {
     }
 
     private void setDefaultBrowserProperties(WebDriver driver) {
-        driver.manage().timeouts().implicitlyWait(10,TimeUnit.SECONDS);
-        driver.manage().timeouts().pageLoadTimeout(10,TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
         driver.manage().window().maximize();
     }
 
     private WebDriver getBrowserDriver() {
+        setDriverExecutable();
+        switch (getAppProperties().getProperty("browser")) {
 
-        switch (getAppProperties().getProperty("browser")){
             case "ie":
-                System.setProperty("webdriver.ie.driver","IEDriverServer");
+
                 return new InternetExplorerDriver();
 
             case "firefox":
-                System.setProperty("webdriver.gecko.driver","geckodriver");
                 return new FirefoxDriver();
 
             default:
-                System.setProperty("webdriver.chrome.driver","chromedriver");
                 return new ChromeDriver();
 
         }
 
+    }
+
+    private void setDriverExecutable() {
+
+        if (System.getProperty("os.name").startsWith("Windows")) {
+
+            System.setProperty("webdriver.ie.driver", "src/test/resources/drivers/IEDriverServer.exe");
+            System.setProperty("webdriver.chrome.driver", "src/test/resources/drivers/chromedriver.exe");
+            System.setProperty("webdriver.firefox.driver", "/drivers/geckodriver.exe");
+
+        } else if (System.getProperty("os.name").startsWith("Mac")) {
+            System.setProperty("webdriver.chrome.driver", "src/test/resources/drivers/mchromedriver");
+            System.setProperty("webdriver.firefox.driver", "src/test/resources/drivers/mgeckodriver");
+
+        } else if (System.getProperty("os.name").startsWith("u")) {
+            System.setProperty("webdriver.chrome.driver", "src/test/resources/drivers/lchromedriver");
+            System.setProperty("webdriver.firefox.driver", "src/test/resources/drivers/lgeckodriver");
+
+        }
     }
 
     private Properties getAppProperties() {
@@ -68,7 +86,7 @@ public class ConfigureCuke {
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         DriverManager.getDriver().quit();
         System.out.println();
     }
